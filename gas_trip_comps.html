@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gas Trip Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --border: #252830;
+    --accent: #f5c842;
+    --accent2: #3af0b0;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --win: #3af0b0;
+    --lose: #f25c5c;
+    --rad: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.78rem;
+    margin-top: 6px;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-width: 860px;
+    margin: 0 auto 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--rad);
+    padding: 20px;
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 140px;
+  }
+
+  label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+  }
+
+  select, input[type="number"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    padding: 8px 10px;
+    border-radius: 6px;
+    width: 100%;
+    appearance: none;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  select:focus, input:focus {
+    border-color: var(--accent);
+  }
+
+  .prices-section {
+    max-width: 860px;
+    margin: 0 auto 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--rad);
+    padding: 20px;
+  }
+
+  .prices-section h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .price-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .price-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 110px;
+  }
+
+  .price-input-group label {
+    color: var(--text);
+  }
+
+  .results {
+    max-width: 860px;
+    margin: 0 auto;
+    display: grid;
+    gap: 12px;
+  }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--rad);
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.15s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-card.best {
+    border-color: var(--win);
+  }
+
+  .result-card.best::before {
+    content: '★ BEST';
+    position: absolute;
+    top: 0; right: 0;
+    background: var(--win);
+    color: #0e0f11;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 3px 10px;
+    border-bottom-left-radius: 6px;
+  }
+
+  .station-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text);
+  }
+
+  .station-meta {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .station-meta span {
+    margin-right: 14px;
+  }
+
+  .cost-main {
+    text-align: right;
+  }
+
+  .total-cost {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .result-card.best .total-cost {
+    color: var(--win);
+  }
+
+  .savings-badge {
+    font-size: 0.65rem;
+    color: var(--win);
+    margin-top: 3px;
+    text-align: right;
+  }
+
+  .cost-higher {
+    font-size: 0.65rem;
+    color: var(--lose);
+    margin-top: 3px;
+    text-align: right;
+  }
+
+  .breakdown {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .breakdown-item {
+    background: var(--bg);
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .breakdown-item .val {
+    color: var(--text);
+  }
+
+  .divider-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    max-width: 860px;
+    margin: 4px auto 8px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .divider-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .no-data {
+    text-align: center;
+    color: var(--muted);
+    padding: 40px;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 480px) {
+    .result-card { grid-template-columns: 1fr; }
+    .cost-main { text-align: left; }
+    .savings-badge, .cost-higher { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⛽ Gas Trip Comps</h1>
+  <p>True cost including driving distance</p>
+</header>
+
+<div class="controls">
+  <div class="control-group">
+    <label>Vehicle</label>
+    <select id="vehicle">
+      <option value="rav4">RAV4 (25 mpg, 8/12/15 gal)</option>
+      <option value="tacoma">Tacoma (19 mpg, 10.5/15.8/20.5 gal)</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>Starting From</label>
+    <select id="origin">
+      <option value="work">Work</option>
+      <option value="home">Home</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label>Fill Amount</label>
+    <select id="fillAmount">
+      <option value="half">½ Tank</option>
+      <option value="three_quarter">¾ Tank</option>
+      <option value="full">Full Tank</option>
+    </select>
+  </div>
+</div>
+
+<div class="prices-section">
+  <h2>Today's Prices ($/gal)</h2>
+  <div class="price-inputs" id="priceInputs"></div>
+</div>
+
+<div id="results" class="results"></div>
+
+<script>
+const DATA = {
+  rav4: {
+    mpg: 25,
+    fills: { half: 8, three_quarter: 12, full: 15 },
+    work: {
+      stations: ['KB Stars', 'Gold Ranch', 'Costco', 'Safeway', 'Carson'],
+      distances: [27.8, 60.4, 89.6, 77.1, 83.4],
+      defaultPrices: [5.80, 5.19, 4.89, 4.99, 4.55]
+    },
+    home: {
+      stations: ['KB Stars', 'Gold Ranch', 'Costco', 'Safeway'],
+      distances: [36.0, 54.0, 82.0, 70.0],
+      defaultPrices: [5.80, 5.19, 4.89, 4.99]
+    }
+  },
+  tacoma: {
+    mpg: 19,
+    fills: { half: 10.5, three_quarter: 15.8, full: 20.5 },
+    work: {
+      stations: ['KB Stars', 'Gold Ranch', 'Costco', 'Safeway'],
+      distances: [27.8, 60.4, 89.6, 77.1],
+      defaultPrices: [5.80, 5.19, 4.89, 4.99]
+    },
+    home: {
+      stations: ['KB Stars', 'Gold Ranch', 'Costco', 'Safeway'],
+      distances: [36.0, 54.0, 82.0, 70.0],
+      defaultPrices: [5.80, 5.19, 4.89, 4.99]
+    }
+  }
+};
+
+let priceInputEls = {};
+
+function getConfig() {
+  const vehicle = document.getElementById('vehicle').value;
+  const origin = document.getElementById('origin').value;
+  const fillKey = document.getElementById('fillAmount').value;
+  return { vehicle, origin, fillKey, ...DATA[vehicle], route: DATA[vehicle][origin] };
+}
+
+function buildPriceInputs() {
+  const { route } = getConfig();
+  const container = document.getElementById('priceInputs');
+  container.innerHTML = '';
+  priceInputEls = {};
+  route.stations.forEach((name, i) => {
+    const div = document.createElement('div');
+    div.className = 'price-input-group';
+    div.innerHTML = `<label>${name}</label>
+      <input type="number" step="0.01" min="0" value="${route.defaultPrices[i].toFixed(2)}" id="price_${i}">`;
+    container.appendChild(div);
+    priceInputEls[i] = div.querySelector('input');
+    div.querySelector('input').addEventListener('input', renderResults);
+  });
+}
+
+function renderResults() {
+  const { vehicle, route, fills, fillKey, mpg } = getConfig();
+  const gallons = fills[fillKey];
+  const container = document.getElementById('results');
+
+  const results = route.stations.map((name, i) => {
+    const price = parseFloat(priceInputEls[i]?.value || route.defaultPrices[i]);
+    const dist = route.distances[i];
+    const baseDist = route.distances[0];
+    const addedDist = Math.max(0, dist - baseDist);
+    const addedFuel = addedDist / mpg;
+    const totalGal = gallons + addedFuel;
+    const totalCost = price * totalGal;
+    return { name, price, dist, addedDist, addedFuel: addedFuel.toFixed(3), totalGal: totalGal.toFixed(2), totalCost, gallons };
+  });
+
+  results.sort((a, b) => a.totalCost - b.totalCost);
+  const best = results[0].totalCost;
+
+  container.innerHTML = '';
+
+  const label = document.createElement('div');
+  label.className = 'divider-label';
+  label.textContent = `Results — sorted by true cost`;
+  container.appendChild(label);
+
+  results.forEach((r, idx) => {
+    const card = document.createElement('div');
+    card.className = 'result-card' + (idx === 0 ? ' best' : '');
+
+    const diff = r.totalCost - best;
+    const diffHtml = idx === 0
+      ? `<div class="savings-badge">cheapest option</div>`
+      : `<div class="cost-higher">+$${diff.toFixed(2)} more</div>`;
+
+    card.innerHTML = `
+      <div>
+        <div class="station-name">${r.name}</div>
+        <div class="station-meta">
+          <span>📍 ${r.dist} mi round trip</span>
+          <span>⛽ $${r.price.toFixed(2)}/gal</span>
+        </div>
+      </div>
+      <div class="cost-main">
+        <div class="total-cost">$${r.totalCost.toFixed(2)}</div>
+        ${diffHtml}
+      </div>
+      <div class="breakdown">
+        <div class="breakdown-item">Base fill <span class="val">${r.gallons} gal</span></div>
+        <div class="breakdown-item">Extra driving <span class="val">${r.addedDist.toFixed(1)} mi</span></div>
+        <div class="breakdown-item">Extra fuel <span class="val">${r.addedFuel} gal</span></div>
+        <div class="breakdown-item">Total fuel <span class="val">${r.totalGal} gal</span></div>
+      </div>`;
+
+    container.appendChild(card);
+  });
+}
+
+function init() {
+  buildPriceInputs();
+  renderResults();
+}
+
+document.getElementById('vehicle').addEventListener('change', init);
+document.getElementById('origin').addEventListener('change', init);
+document.getElementById('fillAmount').addEventListener('change', renderResults);
+
+init();
+</script>
+</body>
+</html>
