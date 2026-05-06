@@ -2,441 +2,465 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gas Trip Calculator</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>3-Year Cashflow - Interactive</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  :root {
-    --bg: #0e0f11;
-    --surface: #16181c;
-    --border: #252830;
-    --accent: #f5c842;
-    --accent2: #3af0b0;
-    --text: #e8eaf0;
-    --muted: #6b7280;
-    --win: #3af0b0;
-    --lose: #f25c5c;
-    --rad: 10px;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    min-height: 100vh;
-    padding: 24px 16px 60px;
-  }
-
-  header {
-    text-align: center;
-    margin-bottom: 36px;
-  }
-
-  header h1 {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(1.8rem, 5vw, 2.8rem);
-    color: var(--accent);
-    letter-spacing: -0.5px;
-    line-height: 1;
-  }
-
-  header p {
-    color: var(--muted);
-    font-size: 0.78rem;
-    margin-top: 6px;
-  }
-
-  .controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    max-width: 860px;
-    margin: 0 auto 28px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--rad);
-    padding: 20px;
-  }
-
-  .control-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-    min-width: 140px;
-  }
-
-  label {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-  }
-
-  select, input[type="number"] {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    padding: 8px 10px;
-    border-radius: 6px;
-    width: 100%;
-    appearance: none;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  select:focus, input:focus {
-    border-color: var(--accent);
-  }
-
-  .prices-section {
-    max-width: 860px;
-    margin: 0 auto 28px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--rad);
-    padding: 20px;
-  }
-
-  .prices-section h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--muted);
-    margin-bottom: 14px;
-  }
-
-  .price-inputs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .price-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    flex: 1;
-    min-width: 110px;
-  }
-
-  .price-input-group label {
-    color: var(--text);
-  }
-
-  .results {
-    max-width: 860px;
-    margin: 0 auto;
-    display: grid;
-    gap: 12px;
-  }
-
-  .result-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--rad);
-    padding: 18px 20px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 12px;
-    transition: transform 0.15s, border-color 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .result-card.best {
-    border-color: var(--win);
-  }
-
-  .result-card.best::before {
-    content: '★ BEST';
-    position: absolute;
-    top: 0; right: 0;
-    background: var(--win);
-    color: #0e0f11;
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    padding: 3px 10px;
-    border-bottom-left-radius: 6px;
-  }
-
-  .station-name {
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: var(--text);
-  }
-
-  .station-meta {
-    font-size: 0.7rem;
-    color: var(--muted);
-    margin-top: 3px;
-  }
-
-  .station-meta span {
-    margin-right: 14px;
-  }
-
-  .cost-main {
-    text-align: right;
-  }
-
-  .total-cost {
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 1.5rem;
-    color: var(--accent);
-    line-height: 1;
-  }
-
-  .result-card.best .total-cost {
-    color: var(--win);
-  }
-
-  .savings-badge {
-    font-size: 0.65rem;
-    color: var(--win);
-    margin-top: 3px;
-    text-align: right;
-  }
-
-  .cost-higher {
-    font-size: 0.65rem;
-    color: var(--lose);
-    margin-top: 3px;
-    text-align: right;
-  }
-
-  .breakdown {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-    font-size: 0.7rem;
-    color: var(--muted);
-  }
-
-  .breakdown-item {
-    background: var(--bg);
-    padding: 4px 10px;
-    border-radius: 4px;
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-
-  .breakdown-item .val {
-    color: var(--text);
-  }
-
-  .divider-label {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--muted);
-    max-width: 860px;
-    margin: 4px auto 8px;
-    padding: 0 4px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .divider-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .no-data {
-    text-align: center;
-    color: var(--muted);
-    padding: 40px;
-    font-size: 0.85rem;
-  }
-
-  @media (max-width: 480px) {
-    .result-card { grid-template-columns: 1fr; }
-    .cost-main { text-align: left; }
-    .savings-badge, .cost-higher { text-align: left; }
-  }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;color:#1a1a18;font-size:14px}
+.page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem}
+h1{font-size:20px;font-weight:500;margin-bottom:4px}
+.sub{font-size:12px;color:#888;margin-bottom:2rem}
+.sec{background:#fff;border-radius:10px;border:0.5px solid #e0ded8;padding:1.25rem 1.5rem;margin-bottom:1.25rem}
+.st{font-size:10.5px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:.85rem}
+.ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin-bottom:.5rem}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:12px;color:#666}
+.field input{height:34px;border:0.5px solid #ccc;border-radius:6px;background:#fff;color:#1a1a18;font-family:inherit;font-size:13px;padding:0 10px;width:100%}
+.field input:focus{outline:none;border-color:#999;box-shadow:0 0 0 2px rgba(0,0,0,.06)}
+.hint{font-size:10.5px;color:#aaa;margin-top:1px}
+.divr{border:none;border-top:0.5px solid #e8e6e0;margin:1rem 0}
+.alert{font-size:11.5px;padding:7px 11px;border-radius:6px;margin-bottom:8px;border-left:3px solid}
+.aw{background:rgba(186,117,23,.07);border-color:#BA7517;color:#7a4e00}
+.ao{background:rgba(29,158,117,.07);border-color:#1D9E75;color:#0a5c3e}
+.bg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem}
+.bc{background:#f9f8f5;border-radius:8px;padding:.75rem 1rem;border:0.5px solid #e8e6e0}
+.by{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:#888;margin-bottom:5px}
+.brow{display:flex;justify-content:space-between;font-size:12px;padding:2px 0;border-bottom:0.5px solid #eee}
+.brow:last-child{border-bottom:none;font-weight:500;padding-top:4px}
+.bl{color:#888}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
+.card{background:#f9f8f5;border-radius:8px;padding:.9rem 1rem;border:0.5px solid #e8e6e0;border-top-width:2px}
+.card.a{border-top-color:#378ADD}.card.b2{border-top-color:#E8A838}
+.ct{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem}
+.card.a .ct{color:#378ADD}.card.b2 .ct{color:#E8A838}
+.kv{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;border-bottom:0.5px solid #eee}
+.kv:last-child{border-bottom:none;font-weight:500;padding-top:5px;margin-top:2px}
+.kl{color:#666}
+.pos{color:#1a7a56}.neg{color:#b83020}.wa{color:#7a4e00}
+.leg{display:flex;gap:16px;font-size:12px;color:#666;margin-bottom:8px;flex-wrap:wrap}
+.leg span{display:flex;align-items:center;gap:5px}
+.lsq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.cw{position:relative;width:100%;height:270px;margin:.75rem 0 1rem}
+.tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{font-size:12px;padding:5px 14px;border:0.5px solid #ccc;border-radius:6px;background:transparent;color:#666;cursor:pointer}
+.tab.on{background:#f5f4f0;color:#1a1a18;border-color:#999;font-weight:500}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{font-size:10px;font-weight:500;color:#888;text-align:right;padding:5px 6px;border-bottom:0.5px solid #e8e6e0;white-space:nowrap}
+th:first-child{text-align:left}
+td{padding:5px 6px;border-bottom:0.5px solid #f0eee8;text-align:right;color:#1a1a18;white-space:nowrap}
+td:first-child{text-align:left;font-weight:500}
+tr:hover td{background:#faf9f6!important}
+.er td{background:#f0faf6}
+.pr td{background:#fdf0ee}
+.xr td{background:#f4f2fd}
+.hr td{background:#fdf7eb}
+.yd td{background:#f5f4f0;font-size:10px;font-weight:500;color:#555;text-transform:uppercase;letter-spacing:.04em;border-top:0.5px solid #ddd}
+.nt{font-size:9px;color:#aaa;display:block}
+.xb{font-size:9px;color:#534AB7;background:rgba(83,74,183,.1);border-radius:3px;padding:1px 4px;margin-left:3px}
+.pb{font-size:9px;color:#b83020;background:rgba(184,48,32,.08);border-radius:3px;padding:1px 4px;margin-left:3px}
+.cn{color:#b83020;font-weight:600}
+.clo{color:#7a4e00}
+.note{font-size:11px;color:#555;padding:7px 10px;border-radius:6px;border-left:3px solid;margin-bottom:10px;line-height:1.6}
+.note.a{background:rgba(55,138,221,.06);border-color:#378ADD}
+.note.b{background:rgba(232,168,56,.06);border-color:#E8A838}
 </style>
 </head>
 <body>
+<div class="page">
+<h1>3-Year Household Cashflow - Interactive Model</h1>
+<p class="sub">May 2026 - April 2029 | Edit any field to update in real time</p>
 
-<header>
-  <h1>⛽ Gas Trip Comps</h1>
-  <p>True cost including driving distance</p>
-</header>
-
-<div class="controls">
-  <div class="control-group">
-    <label>Vehicle</label>
-    <select id="vehicle">
-      <option value="rav4">RAV4 (25 mpg, 8/12/15 gal)</option>
-      <option value="tacoma">Tacoma (19 mpg, 10.5/15.8/20.5 gal)</option>
-    </select>
-  </div>
-  <div class="control-group">
-    <label>Starting From</label>
-    <select id="origin">
-      <option value="work">Work</option>
-      <option value="home">Home</option>
-    </select>
-  </div>
-  <div class="control-group">
-    <label>Fill Amount</label>
-    <select id="fillAmount">
-      <option value="half">½ Tank</option>
-      <option value="three_quarter">¾ Tank</option>
-      <option value="full">Full Tank</option>
-    </select>
+<div class="sec">
+  <div class="st">Income</div>
+  <div class="ig">
+    <div class="field"><label>Paycheck A ($)</label><input type="number" id="payA" value="3029"><span class="hint">Alternates every Friday</span></div>
+    <div class="field"><label>Paycheck B ($)</label><input type="number" id="payB" value="3068"></div>
+    <div class="field"><label>Annual raise (%)</label><input type="number" id="raise" value="2.5" step="0.1"><span class="hint">Applied each May from 2027</span></div>
   </div>
 </div>
 
-<div class="prices-section">
-  <h2>Today's Prices ($/gal)</h2>
-  <div class="price-inputs" id="priceInputs"></div>
+<div class="sec">
+  <div class="st">Fixed monthly costs</div>
+  <div class="ig">
+    <div class="field"><label>Mortgage - P&amp;I + PMI ($)</label><input type="number" id="mort" value="4116"></div>
+    <div class="field"><label>All other monthly expenses ($)</label><input type="number" id="other" value="5168"><span class="hint">Incl. car + student loans</span></div>
+  </div>
 </div>
 
-<div id="results" class="results"></div>
+<div class="sec">
+  <div class="st">Annual bills - base amounts and growth rates</div>
+  <div class="ig">
+    <div class="field"><label>Property tax - annual ($)</label><input type="number" id="ptBase" value="10500"><span class="hint">Paid Dec + Apr (split equally)</span></div>
+    <div class="field"><label>Prop tax growth (%/yr)</label><input type="number" id="ptGrow" value="2.0" step="0.1"><span class="hint">Prop 13 cap ~2%</span></div>
+    <div class="field"><label>HOA - annual ($)</label><input type="number" id="hoaBase" value="3624"><span class="hint">Lump sum each December</span></div>
+    <div class="field"><label>HOA growth (%/yr)</label><input type="number" id="hoaGrow" value="5.0" step="0.1"></div>
+    <div class="field"><label>Home insurance - annual ($)</label><input type="number" id="insBase" value="5224"><span class="hint">Due each May from 2027</span></div>
+    <div class="field"><label>Insurance growth (%/yr)</label><input type="number" id="insGrow" value="9.0" step="0.1"><span class="hint">CA market currently elevated</span></div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="st">Accounts and interest</div>
+  <div class="ig">
+    <div class="field"><label>Savings starting balance ($)</label><input type="number" id="savStart" value="40000"></div>
+    <div class="field"><label>Checking starting balance ($)</label><input type="number" id="ckStart" value="1000"></div>
+    <div class="field"><label>Savings rate (%)</label><input type="number" id="savRate" value="15" step="0.5"><span class="hint">Taken off reg pay first; 5th check excluded</span></div>
+    <div class="field"><label>Checking target balance ($)</label><input type="number" id="ckTarget" value="1000"><span class="hint">Sweep surplus above this to savings</span></div>
+    <div class="field"><label>APY on savings and HYSA (%)</label><input type="number" id="apy" value="3.2" step="0.1"></div>
+  </div>
+</div>
+
+<div class="sec">
+  <div id="alerts"></div>
+  <div class="st">Bill schedule with growth</div>
+  <div class="bg" id="bills"></div>
+  <div class="divr"></div>
+  <div class="st">3-year outcome</div>
+  <div class="cg" id="cards"></div>
+  <div class="leg">
+    <span><span class="lsq" style="background:#378ADD"></span>Scenario A - Savings + HYSA combined</span>
+    <span><span class="lsq" style="background:#E8A838"></span>Scenario B2 - Savings only</span>
+  </div>
+  <div class="cw"><canvas id="ch"></canvas></div>
+  <div class="tabs">
+    <button class="tab on" id="t0" onclick="sv(0)">Chart</button>
+    <button class="tab" id="t1" onclick="sv(1)">Scenario A detail</button>
+    <button class="tab" id="t2" onclick="sv(2)">Scenario B2 detail</button>
+  </div>
+
+  <div id="va" style="display:none">
+    <p class="note a">
+      <strong>Scenario A:</strong> 15% of regular pay is taken off first and sent to savings. Extra (5th) paycheck goes directly to HYSA. Remaining regular pay covers mortgage and other expenses. Surplus above checking target sweeps to savings; savings covers any shortfall. Annual bills paid from HYSA.
+      | <span style="background:#f0faf6;padding:0 4px;border-radius:3px;font-size:10px">Green = 5-Friday month</span>
+      <span style="background:#f4f2fd;padding:0 4px;border-radius:3px;font-size:10px">Purple = HYSA xfer from savings</span>
+      <span style="background:#fdf0ee;padding:0 4px;border-radius:3px;font-size:10px">Red = savings pull to cover checking</span>
+    </p>
+    <div class="tw">
+    <table>
+      <thead><tr>
+        <th>Month</th><th>Fri</th>
+        <th>Ck open</th>
+        <th>+ Reg pay</th>
+        <th>- 15% sav</th>
+        <th>- Mortgage</th>
+        <th>- Other exp</th>
+        <th>= Ck close</th>
+        <th>Sweep</th>
+        <th>Sav pull</th>
+        <th>Total to sav</th>
+        <th>HYSA in</th>
+        <th>HYSA pmts</th>
+        <th>HYSA xfer</th>
+        <th>Savings bal</th>
+        <th>HYSA bal</th>
+        <th>Ck end</th>
+      </tr></thead>
+      <tbody id="tba"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div id="vb2" style="display:none">
+    <p class="note b">
+      <strong>Scenario B2:</strong> 15% of regular pay taken off first to savings. Extra (5th) paycheck goes directly to savings (no HYSA). Prop tax + insurance averaged into monthly housing. HOA paid as lump each December. Surplus above checking target sweeps to savings.
+      | <span style="background:#fdf7eb;padding:0 4px;border-radius:3px;font-size:10px">Orange = Dec HOA lump</span>
+      <span style="background:#fdf0ee;padding:0 4px;border-radius:3px;font-size:10px">Red = savings pull to cover checking</span>
+    </p>
+    <div class="tw">
+    <table>
+      <thead><tr>
+        <th>Month</th><th>Fri</th>
+        <th>Ck open</th>
+        <th>+ Reg pay</th>
+        <th>+ Extra ck</th>
+        <th>- 15% sav</th>
+        <th>- Housing</th>
+        <th>- Other exp</th>
+        <th>- HOA lump</th>
+        <th>= Ck close</th>
+        <th>Sweep</th>
+        <th>Sav pull</th>
+        <th>Total to sav</th>
+        <th>Savings bal</th>
+        <th>Ck end</th>
+      </tr></thead>
+      <tbody id="tbb2"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<p style="font-size:11px;color:#aaa;margin-top:1rem;line-height:1.7">
+  <strong>Savings logic:</strong> The savings rate % is taken off regular paychecks first before anything else - this is guaranteed every month. The 5th paycheck goes to HYSA (Scenario A) or directly to savings (Scenario B2) in full, with no 15% split. After the mandatory savings and fixed costs are paid, whatever remains in checking above the target balance sweeps to savings as a bonus. If checking goes negative after costs, savings covers the gap. Ck end carries forward as next month's Ck open. All accounts earn APY compounded monthly on opening balance.
+</p>
+</div>
 
 <script>
-const DATA = {
-  rav4: {
-    mpg: 25,
-    fills: { half: 8, three_quarter: 12, full: 15 },
-    work: {
-      stations: ['KB Stars', 'Gold Ranch', 'Costco', 'Safeway', 'Carson'],
-      distances: [27.8, 60.4, 89.6, 77.1, 83.4],
-      defaultPrices: [5.80, 5.19, 4.89, 4.99, 4.55]
-    },
-    home: {
-      stations: ['KB Stars', 'Gold Ranch', 'Costco', 'Safeway'],
-      distances: [36.0, 54.0, 82.0, 70.0],
-      defaultPrices: [5.80, 5.19, 4.89, 4.99]
-    }
-  },
-  tacoma: {
-    mpg: 19,
-    fills: { half: 10.5, three_quarter: 15.8, full: 20.5 },
-    work: {
-      stations: ['KB Stars', 'Gold Ranch', 'Costco', 'Safeway'],
-      distances: [27.8, 60.4, 89.6, 77.1],
-      defaultPrices: [5.80, 5.19, 4.89, 4.99]
-    },
-    home: {
-      stations: ['KB Stars', 'Gold Ranch', 'Costco', 'Safeway'],
-      distances: [36.0, 54.0, 82.0, 70.0],
-      defaultPrices: [5.80, 5.19, 4.89, 4.99]
-    }
+var MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var chartInst=null;
+
+function nFri(yr,mo){
+  var d=new Date(yr,mo,1);
+  while(d.getDay()!==5)d.setDate(d.getDate()+1);
+  var n=0;while(d.getMonth()===mo){n++;d.setDate(d.getDate()+7);}
+  return n;
+}
+function ac(n){var a=Math.abs(Math.round(n));return(n<0?'(':'')+'$'+a.toLocaleString()+(n<0?')':'');}
+function gv(id){return parseFloat(document.getElementById(id).value)||0;}
+function getV(){
+  return{
+    payA:gv('payA'),payB:gv('payB'),raise:gv('raise')/100,
+    mort:gv('mort'),other:gv('other'),
+    ptBase:gv('ptBase'),ptGrow:gv('ptGrow')/100,
+    hoaBase:gv('hoaBase'),hoaGrow:gv('hoaGrow')/100,
+    insBase:gv('insBase'),insGrow:gv('insGrow')/100,
+    savStart:gv('savStart'),ckStart:gv('ckStart'),
+    savRate:gv('savRate')/100,
+    ckTarget:gv('ckTarget'),
+    mr:gv('apy')/100/12
+  };
+}
+function bamt(base,grow,yr){return base*Math.pow(1+grow,yr-2026);}
+
+function runA(v){
+  var pi=0,sb=v.savStart,hb=0,ck=v.ckStart,rows=[];
+  for(var i=0;i<36;i++){
+    var tm=4+i,mo=tm%12,yr=2026+Math.floor(tm/12);
+    var raises=Math.max(0,mo>=4?(yr-2026):(yr-2027));
+    var mul=Math.pow(1+v.raise,raises);
+    var nf=nFri(yr,mo),ch=[];
+    for(var f=0;f<nf;f++){ch.push(pi++%2===0?v.payA*mul:v.payB*mul);}
+    var reg=ch.slice(0,4).reduce(function(a,b){return a+b;},0);
+    var ext=nf===5?ch[4]:0;
+    var pt=bamt(v.ptBase/2,v.ptGrow,yr);
+    var hoa=bamt(v.hoaBase,v.hoaGrow,yr);
+    var ins=bamt(v.insBase,v.insGrow,yr);
+    var hp=0,ev=[];
+    if(mo===11){hp+=pt;ev.push('PropTax '+ac(Math.round(pt)));hp+=hoa;ev.push('HOA '+ac(Math.round(hoa)));}
+    if(mo===3){hp+=pt;ev.push('PropTax '+ac(Math.round(pt)));}
+    if(mo===4&&yr!==2026){hp+=ins;ev.push('Insurance '+ac(Math.round(ins)));}
+
+    var sav15=reg*v.savRate;      // mandatory 15% off the top
+    var ckOpen=ck;
+    ck+=reg;
+    ck-=sav15;                    // 15% out first
+    ck-=(v.mort+v.other);         // then fixed costs
+    var ckClose=ck;
+
+    var sweep=0,pull=0;
+    if(ck>v.ckTarget){sweep=ck-v.ckTarget;ck=v.ckTarget;}
+    else if(ck<0){pull=-ck;ck=0;}
+    var ckEnd=ck;
+
+    var totalToSav=sav15+sweep;
+    sb=sb*(1+v.mr)+totalToSav-pull;
+    hb=hb*(1+v.mr)+ext-hp;
+    var xf=0;if(hb<0){xf=-hb;sb-=xf;hb=0;}
+
+    rows.push({lb:MN[mo]+"'"+String(yr).slice(2),mo:mo,yr:yr,nf:nf,
+      reg:Math.round(reg),ext:Math.round(ext),sav15:Math.round(sav15),
+      mort:v.mort,other:v.other,
+      ckOpen:Math.round(ckOpen),ckClose:Math.round(ckClose),ckEnd:Math.round(ckEnd),
+      sweep:Math.round(sweep),pull:Math.round(pull),totalToSav:Math.round(totalToSav),
+      hyIn:Math.round(ext),hp:Math.round(hp),ev:ev,
+      xf:Math.round(xf),sb:Math.round(sb),hb:Math.round(hb),raises:raises});
   }
-};
-
-let priceInputEls = {};
-
-function getConfig() {
-  const vehicle = document.getElementById('vehicle').value;
-  const origin = document.getElementById('origin').value;
-  const fillKey = document.getElementById('fillAmount').value;
-  return { vehicle, origin, fillKey, ...DATA[vehicle], route: DATA[vehicle][origin] };
+  return rows;
 }
 
-function buildPriceInputs() {
-  const { route } = getConfig();
-  const container = document.getElementById('priceInputs');
-  container.innerHTML = '';
-  priceInputEls = {};
-  route.stations.forEach((name, i) => {
-    const div = document.createElement('div');
-    div.className = 'price-input-group';
-    div.innerHTML = `<label>${name}</label>
-      <input type="number" step="0.01" min="0" value="${route.defaultPrices[i].toFixed(2)}" id="price_${i}">`;
-    container.appendChild(div);
-    priceInputEls[i] = div.querySelector('input');
-    div.querySelector('input').addEventListener('input', renderResults);
+function runB2(v){
+  var pi=0,sb=v.savStart,ck=v.ckStart,rows=[];
+  for(var i=0;i<36;i++){
+    var tm=4+i,mo=tm%12,yr=2026+Math.floor(tm/12);
+    var raises=Math.max(0,mo>=4?(yr-2026):(yr-2027));
+    var mul=Math.pow(1+v.raise,raises);
+    var nf=nFri(yr,mo),ch=[];
+    for(var f=0;f<nf;f++){ch.push(pi++%2===0?v.payA*mul:v.payB*mul);}
+    var reg=ch.slice(0,4).reduce(function(a,b){return a+b;},0);
+    var ext=nf===5?ch[4]:0;
+    var escrow=Math.round((bamt(v.ptBase,v.ptGrow,yr)+bamt(v.insBase,v.insGrow,yr))/12);
+    var housing=v.mort+escrow;
+    var hoaLump=mo===11?bamt(v.hoaBase,v.hoaGrow,yr):0;
+
+    // 15% from reg pay only (extra goes straight to savings separately)
+    var sav15=reg*v.savRate;
+    var ckOpen=ck;
+    ck+=reg;                      // reg pay in
+    ck-=sav15;                    // 15% out first
+    ck-=(housing+v.other+hoaLump); // housing + other costs
+    var ckClose=ck;
+
+    var sweep=0,pull=0;
+    if(ck>v.ckTarget){sweep=ck-v.ckTarget;ck=v.ckTarget;}
+    else if(ck<0){pull=-ck;ck=0;}
+    var ckEnd=ck;
+
+    // extra paycheck goes entirely to savings (bypasses checking)
+    var totalToSav=sav15+sweep+ext;
+    sb=sb*(1+v.mr)+totalToSav-pull;
+
+    rows.push({lb:MN[mo]+"'"+String(yr).slice(2),mo:mo,yr:yr,nf:nf,
+      reg:Math.round(reg),ext:Math.round(ext),sav15:Math.round(sav15),
+      housing:housing,hoaLump:Math.round(hoaLump),other:v.other,
+      ckOpen:Math.round(ckOpen),ckClose:Math.round(ckClose),ckEnd:Math.round(ckEnd),
+      sweep:Math.round(sweep),pull:Math.round(pull),totalToSav:Math.round(totalToSav),
+      sb:Math.round(sb),raises:raises});
+  }
+  return rows;
+}
+
+function renderBills(v){
+  var h='';
+  for(var yr=2026;yr<=2029;yr++){
+    var pt=bamt(v.ptBase,v.ptGrow,yr),hoa=bamt(v.hoaBase,v.hoaGrow,yr),ins=bamt(v.insBase,v.insGrow,yr);
+    h+='<div class="bc"><div class="by">'+yr+'</div>'
+      +'<div class="brow"><span class="bl">Prop tax</span><span>'+ac(Math.round(pt))+'</span></div>'
+      +'<div class="brow"><span class="bl">HOA</span><span>'+ac(Math.round(hoa))+'</span></div>'
+      +'<div class="brow"><span class="bl">Insurance</span><span>'+ac(Math.round(ins))+'</span></div>'
+      +'<div class="brow"><span class="bl">Total</span><span>'+ac(Math.round(pt+hoa+ins))+'</span></div>'
+      +'</div>';
+  }
+  document.getElementById('bills').innerHTML=h;
+}
+
+function renderAlerts(rA,rB2){
+  var ax=rA.reduce(function(s,r){return s+r.xf;},0);
+  var aPull=rA.reduce(function(s,r){return s+r.pull;},0);
+  var bPull=rB2.reduce(function(s,r){return s+r.pull;},0);
+  var aNeg=rA.filter(function(r){return r.ckClose<0;}).map(function(r){return r.lb;});
+  var bNeg=rB2.filter(function(r){return r.ckClose<0;}).map(function(r){return r.lb;});
+  var bm=rB2.filter(function(r){return r.pull>0;}).map(function(r){return r.lb;});
+  var h='';
+  h+=ax>0?'<div class="alert aw">Scenario A: '+ac(ax)+' transferred savings to HYSA over 3 years.</div>'
+        :'<div class="alert ao">Scenario A: HYSA fully self-funded - no savings transfers needed.</div>';
+  h+=aPull>0?'<div class="alert aw">Scenario A: '+ac(aPull)+' pulled from savings to cover checking shortfall.</div>':'';
+  h+=bPull>0?'<div class="alert aw">Scenario B2: '+ac(bPull)+' pulled from savings in '+bm.join(', ')+'.</div>'
+            :'<div class="alert ao">Scenario B2: Checking never goes negative - no savings pulls needed.</div>';
+  if(aNeg.length) h+='<div class="alert aw">Scenario A: Checking goes negative (before savings covers it) in: '+aNeg.join(', ')+'</div>';
+  if(bNeg.length) h+='<div class="alert aw">Scenario B2: Checking goes negative (before savings covers it) in: '+bNeg.join(', ')+'</div>';
+  document.getElementById('alerts').innerHTML=h;
+}
+
+function renderCards(rA,rB2,v){
+  var la=rA[35],lb2=rB2[35];
+  var ac2=la.sb+la.hb;
+  var ax=rA.reduce(function(s,r){return s+r.xf;},0);
+  var bPull=rB2.reduce(function(s,r){return s+r.pull;},0);
+  var e0=Math.round((bamt(v.ptBase,v.ptGrow,2026)+bamt(v.insBase,v.insGrow,2026))/12);
+  var savPct=Math.round(v.savRate*100);
+  function kv(l,val,cls){return '<div class="kv"><span class="kl">'+l+'</span><span class="'+(cls||'')+'">'+val+'</span></div>';}
+  document.getElementById('cards').innerHTML=
+    '<div class="card a"><div class="ct">Scenario A - HYSA strategy</div>'
+    +kv('Savings bal (Apr 29)',ac(la.sb),'pos')
+    +kv('HYSA bal (Apr 29)',ac(la.hb),'pos')
+    +kv('Checking bal (Apr 29)',ac(la.ckEnd))
+    +kv('Sav to HYSA transfers',ax>0?ac(-ax):'None',ax>0?'wa':'pos')
+    +kv('Combined final (Sav+HYSA+Ck)',ac(ac2+la.ckEnd),'pos')
+    +'</div>'
+    +'<div class="card b2"><div class="ct">Scenario B2 - HOA lump Dec</div>'
+    +kv('Savings bal (Apr 29)',ac(lb2.sb),'pos')
+    +kv('Checking bal (Apr 29)',ac(lb2.ckEnd))
+    +kv('Yr 1 monthly housing (B2)',ac(v.mort+e0))
+    +kv('Savings rate applied',savPct+'% of regular pay')
+    +kv('Savings pulls needed',bPull>0?ac(-bPull):'None',bPull>0?'wa':'pos')
+    +'</div>';
+}
+
+function renderChart(rA,rB2){
+  if(chartInst)chartInst.destroy();
+  chartInst=new Chart(document.getElementById('ch'),{
+    type:'line',
+    data:{labels:rA.map(function(r){return r.lb;}),datasets:[
+      {label:'A (Sav+HYSA)',data:rA.map(function(r){return r.sb+r.hb;}),borderColor:'#378ADD',backgroundColor:'rgba(55,138,221,.08)',borderWidth:2.5,pointRadius:2,fill:true},
+      {label:'B2 (savings)',data:rB2.map(function(r){return r.sb;}),borderColor:'#E8A838',backgroundColor:'rgba(232,168,56,.08)',borderWidth:2.5,pointRadius:2,fill:true}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.dataset.label+': $'+Math.abs(Math.round(c.raw)).toLocaleString();}}}},
+      scales:{
+        x:{ticks:{font:{size:9},autoSkip:true,maxTicksLimit:18,maxRotation:45},grid:{display:false}},
+        y:{ticks:{callback:function(vl){return '$'+(vl/1000).toFixed(0)+'k';},font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    }
   });
 }
 
-function renderResults() {
-  const { vehicle, route, fills, fillKey, mpg } = getConfig();
-  const gallons = fills[fillKey];
-  const container = document.getElementById('results');
+function yd(r,cols){
+  var rn=r.yr<=2026?0:(r.yr===2027?0:(r.yr===2028?1:2));
+  return '<tr class="yd"><td colspan="'+cols+'">Year '+(r.yr-2025)+' | May '+r.yr+' - Apr '+(r.yr+1)+' | '+(rn>0?rn+'x 2.5% raise':'Base pay')+'</td></tr>';
+}
+function ckCls(n){return n<0?'cn':(n<500?'clo':'');}
 
-  const results = route.stations.map((name, i) => {
-    const price = parseFloat(priceInputEls[i]?.value || route.defaultPrices[i]);
-    const dist = route.distances[i];
-    const baseDist = route.distances[0];
-    const addedDist = Math.max(0, dist - baseDist);
-    const addedFuel = addedDist / mpg;
-    const totalGal = gallons + addedFuel;
-    const totalCost = price * totalGal;
-    return { name, price, dist, addedDist, addedFuel: addedFuel.toFixed(3), totalGal: totalGal.toFixed(2), totalCost, gallons };
+function renderTableA(rA){
+  var ys={},h='';
+  rA.forEach(function(r){
+    if(r.mo===4&&!ys[r.yr]){ys[r.yr]=true;h+=yd(r,17);}
+    var rc=r.xf>0?'xr':(r.pull>0?'pr':(r.nf===5?'er':''));
+    var et=r.ev.length?'<span class="nt">'+r.ev.join(' + ')+'</span>':'';
+    h+='<tr class="'+rc+'">'
+      +'<td>'+r.lb+(r.nf===5?' *':'')+'</td>'
+      +'<td style="text-align:center">'+r.nf+'</td>'
+      +'<td>'+ac(r.ckOpen)+'</td>'
+      +'<td class="pos">'+ac(r.reg)+'</td>'
+      +'<td class="neg">'+ac(-r.sav15)+'</td>'
+      +'<td class="neg">'+ac(-r.mort)+'</td>'
+      +'<td class="neg">'+ac(-r.other)+'</td>'
+      +'<td class="'+ckCls(r.ckClose)+'">'+ac(r.ckClose)+'</td>'
+      +'<td class="pos">'+(r.sweep>0?ac(r.sweep):'--')+'</td>'
+      +'<td class="'+(r.pull>0?'neg':'')+'">'+(r.pull>0?ac(-r.pull)+'<span class="pb">pull</span>':'--')+'</td>'
+      +'<td class="pos">'+ac(r.totalToSav)+'</td>'
+      +'<td>'+(r.hyIn>0?ac(r.hyIn):'--')+'</td>'
+      +'<td class="'+(r.hp>0?'neg':'')+'">'+(r.hp>0?ac(-r.hp)+et:'--')+'</td>'
+      +'<td class="'+(r.xf>0?'wa':'')+'">'+(r.xf>0?ac(-r.xf)+'<span class="xb">xfer</span>':'--')+'</td>'
+      +'<td class="pos">'+ac(r.sb)+'</td>'
+      +'<td class="pos">'+ac(r.hb)+'</td>'
+      +'<td class="pos">'+ac(r.ckEnd)+'</td>'
+      +'</tr>';
   });
-
-  results.sort((a, b) => a.totalCost - b.totalCost);
-  const best = results[0].totalCost;
-
-  container.innerHTML = '';
-
-  const label = document.createElement('div');
-  label.className = 'divider-label';
-  label.textContent = `Results — sorted by true cost`;
-  container.appendChild(label);
-
-  results.forEach((r, idx) => {
-    const card = document.createElement('div');
-    card.className = 'result-card' + (idx === 0 ? ' best' : '');
-
-    const diff = r.totalCost - best;
-    const diffHtml = idx === 0
-      ? `<div class="savings-badge">cheapest option</div>`
-      : `<div class="cost-higher">+$${diff.toFixed(2)} more</div>`;
-
-    card.innerHTML = `
-      <div>
-        <div class="station-name">${r.name}</div>
-        <div class="station-meta">
-          <span>📍 ${r.dist} mi round trip</span>
-          <span>⛽ $${r.price.toFixed(2)}/gal</span>
-        </div>
-      </div>
-      <div class="cost-main">
-        <div class="total-cost">$${r.totalCost.toFixed(2)}</div>
-        ${diffHtml}
-      </div>
-      <div class="breakdown">
-        <div class="breakdown-item">Base fill <span class="val">${r.gallons} gal</span></div>
-        <div class="breakdown-item">Extra driving <span class="val">${r.addedDist.toFixed(1)} mi</span></div>
-        <div class="breakdown-item">Extra fuel <span class="val">${r.addedFuel} gal</span></div>
-        <div class="breakdown-item">Total fuel <span class="val">${r.totalGal} gal</span></div>
-      </div>`;
-
-    container.appendChild(card);
-  });
+  document.getElementById('tba').innerHTML=h;
 }
 
-function init() {
-  buildPriceInputs();
-  renderResults();
+function renderTableB2(rB2){
+  var ys={},h='';
+  rB2.forEach(function(r){
+    if(r.mo===4&&!ys[r.yr]){ys[r.yr]=true;h+=yd(r,15);}
+    var rc=r.pull>0?'pr':(r.hoaLump>0?'hr':(r.nf===5?'er':''));
+    h+='<tr class="'+rc+'">'
+      +'<td>'+r.lb+(r.nf===5?' *':'')+'</td>'
+      +'<td style="text-align:center">'+r.nf+'</td>'
+      +'<td>'+ac(r.ckOpen)+'</td>'
+      +'<td class="pos">'+ac(r.reg)+'</td>'
+      +'<td class="pos">'+(r.ext>0?ac(r.ext):'--')+'</td>'
+      +'<td class="neg">'+ac(-r.sav15)+'</td>'
+      +'<td class="neg">'+ac(-r.housing)+'</td>'
+      +'<td class="neg">'+ac(-r.other)+'</td>'
+      +'<td class="'+(r.hoaLump>0?'neg':'')+'">'+(r.hoaLump>0?ac(-r.hoaLump):'--')+'</td>'
+      +'<td class="'+ckCls(r.ckClose)+'">'+ac(r.ckClose)+'</td>'
+      +'<td class="pos">'+(r.sweep>0?ac(r.sweep):'--')+'</td>'
+      +'<td class="'+(r.pull>0?'neg':'')+'">'+(r.pull>0?ac(-r.pull)+'<span class="pb">pull</span>':'--')+'</td>'
+      +'<td class="pos">'+ac(r.totalToSav)+'</td>'
+      +'<td class="pos">'+ac(r.sb)+'</td>'
+      +'<td class="pos">'+ac(r.ckEnd)+'</td>'
+      +'</tr>';
+  });
+  document.getElementById('tbb2').innerHTML=h;
 }
 
-document.getElementById('vehicle').addEventListener('change', init);
-document.getElementById('origin').addEventListener('change', init);
-document.getElementById('fillAmount').addEventListener('change', renderResults);
+function sv(i){
+  document.getElementById('va').style.display=i===1?'block':'none';
+  document.getElementById('vb2').style.display=i===2?'block':'none';
+  ['t0','t1','t2'].forEach(function(id,j){document.getElementById(id).classList.toggle('on',i===j);});
+}
 
-init();
+function update(){
+  var v=getV();
+  var rA=runA(v),rB2=runB2(v);
+  renderBills(v);renderAlerts(rA,rB2);renderCards(rA,rB2,v);
+  renderChart(rA,rB2);renderTableA(rA);renderTableB2(rB2);
+}
+document.querySelectorAll('input').forEach(function(el){el.addEventListener('input',update);});
+update();
 </script>
 </body>
 </html>
